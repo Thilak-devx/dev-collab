@@ -1,0 +1,21 @@
+Unhandled error: Expected property name or '}' in JSON at position 7
+
+
+Error: listen EADDRINUSE: address already in use :::5001
+    at Server.setupListenHandle [as _listen2] (node:net:1908:16)
+    at listenInCluster (node:net:1965:12)
+    at Server.listen (node:net:2067:7)
+    at Function.listen (C:\Users\2026\Desktop\dev-collab\backend\node_modules\express\lib\application.js:635:24)
+    at startServer (C:\Users\2026\Desktop\dev-collab\backend\server.js:66:7)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+Emitted 'error' event on Server instance at:
+    at emitErrorNT (node:net:1944:8)
+    at process.processTicksAndRejections (node:internal/process/task_queues:82:21) {
+  code: 'EADDRINUSE',
+  errno: -4091,
+  syscall: 'listen',
+  address: '::',
+  port: 5001
+}
+
+Node.js v20.20.0
