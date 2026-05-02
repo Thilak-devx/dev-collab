@@ -1,4 +1,4 @@
-import{c as b,u as R,r as l,j as t}from"./index-7R77jBqA.js";import{T as U}from"./TaskDetailsDrawer-D5YcUx5_.js";import{E as _}from"./EmptyState-BSZL102p.js";import{S as V}from"./SectionHeader-qOWoMMmL.js";import{W as q,C as G}from"./WorkspaceLayout-BjX6lhyb.js";import{u as O}from"./useWorkspace-BG2SqvvU.js";import"./trash-2-B25DrAsO.js";/**
+import{c as b,u as R,r as l,j as t}from"./index-B91PbD5z.js";import{T as U}from"./TaskDetailsDrawer-DBjY0SPa.js";import{E as _}from"./EmptyState-CdiI48og.js";import{S as V}from"./SectionHeader-bPYPk6ky.js";import{W as q,C as G}from"./WorkspaceLayout-DZTQHkkY.js";import{u as O}from"./useWorkspace-CMhJnBfc.js";import"./trash-2-mR_xnNAP.js";/**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.

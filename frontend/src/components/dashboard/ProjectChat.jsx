@@ -91,7 +91,7 @@ export default function ProjectChat({ projectId, projectName }) {
       return undefined;
     }
 
-    const handleReceiveMessage = (payload) => {
+    const handleIncomingMessage = (payload) => {
       const incomingProjectId =
         payload?.message?.projectId?._id
         || payload?.message?.projectId?.id
@@ -104,10 +104,12 @@ export default function ProjectChat({ projectId, projectName }) {
       setMessages((current) => mergeMessages(current, payload.message));
     };
 
-    socket.on("receive_message", handleReceiveMessage);
+    socket.on("receive_message", handleIncomingMessage);
+    socket.on("messageCreated", handleIncomingMessage);
 
     return () => {
-      socket.off("receive_message", handleReceiveMessage);
+      socket.off("receive_message", handleIncomingMessage);
+      socket.off("messageCreated", handleIncomingMessage);
     };
   }, [projectId, token]);
 
