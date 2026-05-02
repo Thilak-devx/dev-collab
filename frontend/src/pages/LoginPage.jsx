@@ -59,6 +59,8 @@ export default function LoginPage() {
       return;
     }
 
+    console.log("Google token:", token);
+
     setGoogleLoading(true);
     setError("");
 

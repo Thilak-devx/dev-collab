@@ -21,7 +21,7 @@ const {
   setRefreshTokenCookie,
 } = require("../utils/tokenUtils");
 
-const getGoogleClient = () => new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCK_TIME_MS = 15 * 60 * 1000;
 
@@ -100,16 +100,6 @@ const buildAuthPayload = async (res, user) => {
   return {
     user: serializeUser(user),
   };
-};
-
-const verifyGoogleToken = async (token) => {
-  const client = getGoogleClient();
-  const ticket = await client.verifyIdToken({
-    idToken: token,
-    audience: process.env.GOOGLE_CLIENT_ID,
-  });
-
-  return ticket.getPayload();
 };
 
 const registerUser = async (req, res) => {
@@ -192,38 +182,42 @@ const googleAuth = async (req, res) => {
       return res.status(500).json({ message: "Google OAuth is not configured" });
     }
 
-    console.log("Incoming Google token:", req.body.token);
-    console.log("Backend CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
-
-    let payload;
-
-    try {
-      payload = await verifyGoogleToken(token);
-    } catch (error) {
-      console.error("Google verify error:", error);
-      return res.status(401).json({ message: "Invalid Google token" });
+    if (!token) {
+      return res.status(400).json({ message: "No token provided" });
     }
+
+    console.log("Incoming token:", req.body.token?.slice(0, 30));
+    console.log("CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
+    const ticket = await googleClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
 
     if (!payload || !payload.email || !payload.sub) {
       return res.status(401).json({ message: "Invalid Google token" });
     }
 
-    const normalizedEmail = payload.email.toLowerCase();
+    const { email, name } = payload;
+    console.log("Verified user:", email);
+
+    const normalizedEmail = email.toLowerCase();
     let user = await User.findOne({
       $or: [{ googleId: payload.sub }, { email: normalizedEmail }],
     }).select("+refreshTokenHash");
 
     if (!user) {
       user = await User.create({
-        name: payload.name || normalizedEmail.split("@")[0],
+        name: name || normalizedEmail.split("@")[0],
         email: normalizedEmail,
         googleId: payload.sub,
       });
     } else if (!user.googleId) {
       user.googleId = payload.sub;
 
-      if (!user.name && payload.name) {
-        user.name = payload.name;
+      if (!user.name && name) {
+        user.name = name;
       }
 
       await user.save();
@@ -235,7 +229,8 @@ const googleAuth = async (req, res) => {
   } catch (error) {
     const failureReason = error?.message || "Unknown Google auth error";
     logSecurityEvent("GOOGLE_AUTH_FAILURE", `Google auth failed from ${req.ip}: ${failureReason}`);
-    return res.status(401).json({ message: "Google authentication failed" });
+    console.error("Google verify error:", error.message);
+    return res.status(401).json({ message: "Invalid Google token" });
   }
 };
 
