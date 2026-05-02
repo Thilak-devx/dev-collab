@@ -59,7 +59,7 @@ export default function LoginPage() {
       return;
     }
 
-    console.log("Google ID Token:", token);
+    console.log("ID TOKEN LENGTH:", token?.length);
 
     setGoogleLoading(true);
     setError("");
