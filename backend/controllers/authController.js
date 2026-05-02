@@ -192,15 +192,15 @@ const googleAuth = async (req, res) => {
       return res.status(500).json({ message: "Google OAuth is not configured" });
     }
 
-    console.log("Received token:", token ? `${token.slice(0, 20)}...` : "missing");
-    console.log("Expected CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
+    console.log("Incoming Google token:", req.body.token);
+    console.log("Backend CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
 
     let payload;
 
     try {
       payload = await verifyGoogleToken(token);
     } catch (error) {
-      console.error("Google verification error:", error.message);
+      console.error("Google verify error:", error);
       return res.status(401).json({ message: "Invalid Google token" });
     }
 

@@ -51,8 +51,10 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleSuccess = async (response) => {
-    if (!response.credential) {
+  const handleGoogleSuccess = async (credentialResponse) => {
+    const token = credentialResponse?.credential;
+
+    if (!token) {
       setError("Google sign-in did not return a valid credential");
       return;
     }
@@ -61,7 +63,7 @@ export default function LoginPage() {
     setError("");
 
     try {
-      await loginWithGoogle(response.credential);
+      await loginWithGoogle(token);
       navigate(redirectPath);
     } catch (requestError) {
       setError(getRequestErrorMessage(requestError, "Unable to login with Google"));
