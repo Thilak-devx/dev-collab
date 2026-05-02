@@ -9,14 +9,15 @@ const ensureDatabaseName = (mongoUri) => {
   }
 
   const [baseUri, queryString] = mongoUri.split("?");
-  const hasDatabaseName = /\/[^/]+$/.test(baseUri);
+  const normalizedBaseUri = baseUri.replace(/\/+$/, "");
+  const hasDatabaseName = /\/[^/]+$/.test(normalizedBaseUri);
 
   if (hasDatabaseName) {
-    return mongoUri;
+    return queryString ? `${normalizedBaseUri}?${queryString}` : normalizedBaseUri;
   }
 
-  const normalizedBaseUri = `${baseUri}/devcollab`;
-  return queryString ? `${normalizedBaseUri}?${queryString}` : normalizedBaseUri;
+  const uriWithDatabase = `${normalizedBaseUri}/devcollab`;
+  return queryString ? `${uriWithDatabase}?${queryString}` : uriWithDatabase;
 };
 
 const connectDB = async () => {

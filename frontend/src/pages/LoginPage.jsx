@@ -59,7 +59,7 @@ export default function LoginPage() {
       return;
     }
 
-    console.log("ID TOKEN LENGTH:", token?.length);
+    console.log("FRONTEND TOKEN LENGTH:", token?.length);
 
     setGoogleLoading(true);
     setError("");
