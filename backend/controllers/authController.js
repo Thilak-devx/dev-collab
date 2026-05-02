@@ -21,7 +21,7 @@ const {
   setRefreshTokenCookie,
 } = require("../utils/tokenUtils");
 
-const googleClient = new OAuth2Client();
+const getGoogleClient = () => new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCK_TIME_MS = 15 * 60 * 1000;
 
@@ -100,6 +100,16 @@ const buildAuthPayload = async (res, user) => {
   return {
     user: serializeUser(user),
   };
+};
+
+const verifyGoogleToken = async (token) => {
+  const client = getGoogleClient();
+  const ticket = await client.verifyIdToken({
+    idToken: token,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+
+  return ticket.getPayload();
 };
 
 const registerUser = async (req, res) => {
@@ -182,12 +192,17 @@ const googleAuth = async (req, res) => {
       return res.status(500).json({ message: "Google OAuth is not configured" });
     }
 
-    const ticket = await googleClient.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    console.log("Received token:", token ? `${token.slice(0, 20)}...` : "missing");
+    console.log("Expected CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
 
-    const payload = ticket.getPayload();
+    let payload;
+
+    try {
+      payload = await verifyGoogleToken(token);
+    } catch (error) {
+      console.error("Google verification error:", error.message);
+      return res.status(401).json({ message: "Invalid Google token" });
+    }
 
     if (!payload || !payload.email || !payload.sub) {
       return res.status(401).json({ message: "Invalid Google token" });
@@ -220,28 +235,6 @@ const googleAuth = async (req, res) => {
   } catch (error) {
     const failureReason = error?.message || "Unknown Google auth error";
     logSecurityEvent("GOOGLE_AUTH_FAILURE", `Google auth failed from ${req.ip}: ${failureReason}`);
-
-    if (
-      failureReason.includes("Wrong recipient") ||
-      failureReason.includes("audience") ||
-      failureReason.includes("Invalid token audience")
-    ) {
-      return res.status(401).json({
-        message:
-          "Google client ID mismatch. Make sure frontend and backend use the same Google OAuth client.",
-      });
-    }
-
-    if (
-      failureReason.includes("Token used too late") ||
-      failureReason.includes("expired") ||
-      failureReason.includes("Invalid token signature")
-    ) {
-      return res.status(401).json({
-        message: "Google sign-in token is invalid or expired. Please try again.",
-      });
-    }
-
     return res.status(401).json({ message: "Google authentication failed" });
   }
 };
