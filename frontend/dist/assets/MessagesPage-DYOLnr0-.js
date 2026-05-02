@@ -1,4 +1,4 @@
-import{c as ye,r as i,j as e,X as Me,b as be,f as Ie,l as Ue,d as De,e as Ee,u as Le,h as K,i as Pe}from"./index-DAPbDwC2.js";import{W as $e,P as Ae,U as Re}from"./WorkspaceLayout-DTcWXJLT.js";import{E as R}from"./EmptyState-Dvy5LpZk.js";import{S as he}from"./LoadingSkeleton--6iuZJ41.js";import{S as ue}from"./SectionHeader-B7F36LYU.js";import{u as Te}from"./useWorkspace-DEkFxQfF.js";import{P as ze,E as Ge,S as He,g as Ke,a as We,c as qe,b as Be}from"./messageService-613xaO5q.js";import{T as Fe}from"./trash-2-BgFpSh6W.js";/**
+import{c as ye,r as i,j as e,X as Me,b as be,f as Ie,l as Ue,d as De,e as Ee,u as Le,h as K,i as Pe}from"./index-7R77jBqA.js";import{W as $e,P as Ae,U as Re}from"./WorkspaceLayout-BjX6lhyb.js";import{E as R}from"./EmptyState-BSZL102p.js";import{S as he}from"./LoadingSkeleton-CsAZRyhM.js";import{S as ue}from"./SectionHeader-qOWoMMmL.js";import{u as Te}from"./useWorkspace-BG2SqvvU.js";import{P as ze,E as Ge,S as He,g as Ke,a as We,c as qe,b as Be}from"./messageService-C4ONUkYG.js";import{T as Fe}from"./trash-2-B25DrAsO.js";/**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.

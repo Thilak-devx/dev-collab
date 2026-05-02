@@ -13,6 +13,7 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(getStoredUser);
   const [token, setToken] = useState(getStoredToken);
   const [loading, setLoading] = useState(true);
+  const hasStoredSession = Boolean(getStoredToken() && getStoredUser());
 
   const clearAuthState = () => {
     clearStoredAuth();
@@ -31,6 +32,15 @@ export function AuthProvider({ children }) {
   }, []);
 
   useEffect(() => {
+    if (!token || !hasStoredSession) {
+      if (!hasStoredSession) {
+        clearAuthState();
+      }
+
+      setLoading(false);
+      return;
+    }
+
     api
       .post("/auth/refresh", null, { skipAuthRedirect: true })
       .then(() => api.get("/auth/me", { skipAuthRedirect: true }))
@@ -43,7 +53,7 @@ export function AuthProvider({ children }) {
         clearAuthState();
       })
       .finally(() => setLoading(false));
-  }, []);
+  }, [token, hasStoredSession]);
 
   const persistAuth = (authUser) => {
     setStoredAuth(null, authUser);
