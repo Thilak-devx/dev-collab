@@ -134,6 +134,11 @@ export function WorkspaceProvider({ children }) {
       };
     } catch (requestError) {
       const message = requestError.response?.data?.message || "Unable to sync workspace";
+      console.error("Workspace refresh failed:", {
+        message: requestError.message,
+        status: requestError.response?.status,
+        data: requestError.response?.data,
+      });
       setError(message);
       throw requestError;
     } finally {

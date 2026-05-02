@@ -1,4 +1,4 @@
-import{c as f,p as A,u as R,r,j as e,X}from"./index-B91PbD5z.js";import{C as G}from"./WorkspaceLayout-DZTQHkkY.js";import{T as U}from"./trash-2-mR_xnNAP.js";/**
+import{c as f,p as A,u as R,r,j as e,X}from"./index-gtusgkgc.js";import{C as G}from"./WorkspaceLayout-BhZ0FICu.js";import{T as U}from"./trash-2-DvsA54Ig.js";/**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
