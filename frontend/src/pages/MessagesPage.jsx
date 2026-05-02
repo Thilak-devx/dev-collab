@@ -138,12 +138,12 @@ export default function MessagesPage() {
         setChannels([]);
         setSelectedChannelId("");
         setPageLoading(false);
+        setChannelsLoading(false);
         return;
       }
 
       setChannelsLoading(true);
       setPageError("");
-      setSelectedChannelId("");
 
       try {
         const data = await getProjectChannels(selectedProjectId);
@@ -151,6 +151,7 @@ export default function MessagesPage() {
 
         const nextChannel =
           data.find((channel) => channel._id === conversationId)
+          || data.find((channel) => channel._id === location.state?.conversationId)
           || data.find((channel) => channel._id === selectedChannelId)
           || data[0];
         setSelectedChannelId(nextChannel?._id || "");
@@ -163,7 +164,7 @@ export default function MessagesPage() {
     };
 
     loadChannels();
-  }, [conversationId, selectedProjectId, selectedChannelId]);
+  }, [conversationId, location.state?.conversationId, selectedProjectId]);
 
   useEffect(() => {
     const loadMessages = async () => {
