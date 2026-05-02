@@ -218,7 +218,30 @@ const googleAuth = async (req, res) => {
       ...(await buildAuthPayload(res, user)),
     });
   } catch (error) {
-    logSecurityEvent("GOOGLE_AUTH_FAILURE", `Google auth failed from ${req.ip}`);
+    const failureReason = error?.message || "Unknown Google auth error";
+    logSecurityEvent("GOOGLE_AUTH_FAILURE", `Google auth failed from ${req.ip}: ${failureReason}`);
+
+    if (
+      failureReason.includes("Wrong recipient") ||
+      failureReason.includes("audience") ||
+      failureReason.includes("Invalid token audience")
+    ) {
+      return res.status(401).json({
+        message:
+          "Google client ID mismatch. Make sure frontend and backend use the same Google OAuth client.",
+      });
+    }
+
+    if (
+      failureReason.includes("Token used too late") ||
+      failureReason.includes("expired") ||
+      failureReason.includes("Invalid token signature")
+    ) {
+      return res.status(401).json({
+        message: "Google sign-in token is invalid or expired. Please try again.",
+      });
+    }
+
     return res.status(401).json({ message: "Google authentication failed" });
   }
 };
