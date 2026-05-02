@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const { OAuth2Client } = require("google-auth-library");
-const bcrypt = require("bcrypt");
+const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
 const Project = require("../models/Project");
