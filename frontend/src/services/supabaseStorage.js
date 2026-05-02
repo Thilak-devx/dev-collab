@@ -68,6 +68,15 @@ export const uploadTaskFileToSupabase = async ({ file, taskId }) => {
     });
 
   if (error) {
+    if (
+      /row-level security/i.test(error.message || "")
+      || /violates row-level security policy/i.test(error.message || "")
+    ) {
+      throw new Error(
+        "Supabase bucket upload is blocked by storage policy. Allow INSERT uploads for the task-files bucket in Supabase Storage policies."
+      );
+    }
+
     throw error;
   }
 
@@ -76,7 +85,55 @@ export const uploadTaskFileToSupabase = async ({ file, taskId }) => {
   return {
     fileName: file.name,
     fileUrl: data.publicUrl,
+    storagePath,
     fileType: file.type,
     fileSize: file.size,
   };
+};
+
+const normalizeTaskFileStoragePath = (file) => {
+  if (file?.storagePath) {
+    return file.storagePath;
+  }
+
+  if (!file?.fileUrl) {
+    return "";
+  }
+
+  const marker = "/storage/v1/object/public/task-files/";
+  const markerIndex = file.fileUrl.indexOf(marker);
+
+  if (markerIndex === -1) {
+    return "";
+  }
+
+  return decodeURIComponent(file.fileUrl.slice(markerIndex + marker.length));
+};
+
+export const deleteTaskFileFromSupabase = async (file) => {
+  const client = getSupabaseClient();
+  const storagePath = normalizeTaskFileStoragePath(file);
+
+  if (!storagePath) {
+    throw new Error("Task file is missing its storage path");
+  }
+
+  const { error } = await client.storage.from("task-files").remove([storagePath]);
+
+  if (error) {
+    if (/not found/i.test(error.message || "")) {
+      return;
+    }
+
+    if (
+      /row-level security/i.test(error.message || "")
+      || /violates row-level security policy/i.test(error.message || "")
+    ) {
+      throw new Error(
+        "Supabase bucket delete is blocked by storage policy. Allow DELETE for the task-files bucket in Supabase Storage policies."
+      );
+    }
+
+    throw error;
+  }
 };

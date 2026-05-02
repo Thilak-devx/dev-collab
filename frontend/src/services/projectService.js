@@ -11,20 +11,8 @@ export const getProject = async (projectId) => {
 };
 
 export const createProject = async (values) => {
-  console.info("Creating project payload:", values);
-
-  try {
-    const { data } = await api.post("/projects", values);
-    console.info("Create project response:", data);
-    return data.project || data;
-  } catch (error) {
-    console.error("Create project API error:", {
-      message: error.message,
-      status: error.response?.status,
-      data: error.response?.data,
-    });
-    throw error;
-  }
+  const { data } = await api.post("/projects", values);
+  return data.project || data;
 };
 
 export const getProjectTasks = async (projectId) => {

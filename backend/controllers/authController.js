@@ -201,17 +201,13 @@ const googleAuth = async (req, res) => {
       return res.status(500).json({ message: "Google OAuth is not configured" });
     }
 
-    console.log("TOKEN RECEIVED:", token);
-    console.log("TOKEN LENGTH:", token?.length);
-    console.log("SERVER CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
     const payload = await verifyGoogleToken(token);
 
     if (!payload || !payload.email || !payload.sub) {
       return res.status(401).json({ message: "Invalid Google token" });
     }
 
-    const { email, name, picture } = payload;
-    console.log("Google user verified:", email);
+    const { email, name } = payload;
 
     const normalizedEmail = email.toLowerCase();
     let user = await User.findOne({

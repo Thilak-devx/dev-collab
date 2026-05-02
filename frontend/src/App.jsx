@@ -6,10 +6,10 @@ import AuthLayout from "./layouts/AuthLayout";
 
 const CalendarPage = lazy(() => import("./pages/CalendarPage"));
 const DashboardPage = lazy(() => import("./pages/DashboardPage"));
+const FilesPage = lazy(() => import("./pages/FilesPage"));
 const InviteJoin = lazy(() => import("./pages/InviteJoin"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const MessagesPage = lazy(() => import("./pages/MessagesPage"));
-const PlaceholderPage = lazy(() => import("./pages/PlaceholderPage"));
 const ProjectDetailsPage = lazy(() => import("./pages/ProjectDetailsPage"));
 const ProjectsPage = lazy(() => import("./pages/ProjectsPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
@@ -125,11 +125,7 @@ function App() {
           path="/files"
           element={(
             <ProtectedRoute>
-              <PlaceholderPage
-                description="File storage is not part of this build yet. Use projects and tasks to manage real data right now."
-                label="Files"
-                title="Files"
-              />
+              <FilesPage />
             </ProtectedRoute>
           )}
         />

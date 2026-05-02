@@ -7,6 +7,7 @@ const {
   deleteTask,
   getTaskFiles,
   createTaskFile,
+  deleteTaskFile,
 } = require("../controllers/taskController");
 const { protect } = require("../middleware/authMiddleware");
 const { loadTaskProject } = require("../middleware/taskAccessMiddleware");
@@ -26,6 +27,14 @@ router.post("/", validateWithZod({ body: taskCreateSchema }), createTaskFromBody
 router.get("/", validateWithZod({ query: taskQuerySchema }), getTasks);
 router.get("/:id/files", validateWithZod({ params: resourceIdParamsSchema }), loadTaskProject, getTaskFiles);
 router.post("/:id/files", validateWithZod({ params: resourceIdParamsSchema, body: taskFileCreateSchema }), loadTaskProject, createTaskFile);
+router.delete(
+  "/:id/files/:fileId",
+  validateWithZod({
+    params: resourceIdParamsSchema.extend({ fileId: resourceIdParamsSchema.shape.id }),
+  }),
+  loadTaskProject,
+  deleteTaskFile
+);
 router.patch("/:id", validateWithZod({ params: resourceIdParamsSchema, body: taskUpdateSchema }), loadTaskProject, updateTask);
 router.delete("/:id", validateWithZod({ params: resourceIdParamsSchema }), loadTaskProject, deleteTask);
 

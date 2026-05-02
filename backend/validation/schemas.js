@@ -112,6 +112,7 @@ const directMessageCreateSchema = z.object({
 const taskFileCreateSchema = z.object({
   fileName: z.string().trim().min(1, "File name is required").max(255, "File name is too long"),
   fileUrl: z.string().trim().url("File URL must be valid"),
+  storagePath: z.string().trim().min(1, "Storage path is required").max(500, "Storage path is too long").optional(),
   fileType: z
     .string()
     .trim()

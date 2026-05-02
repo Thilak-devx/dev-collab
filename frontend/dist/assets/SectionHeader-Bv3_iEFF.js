@@ -1,0 +1,6 @@
+import{c as a,j as e}from"./index-n8zgiY4s.js";/**
+ * @license lucide-react v0.511.0 - ISC
+ *
+ * This source code is licensed under the ISC license.
+ * See the LICENSE file in the root directory of this source tree.
+ */const i=[["polyline",{points:"22 12 16 12 14 15 10 15 8 12 2 12",key:"o97t9d"}],["path",{d:"M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z",key:"oot6mr"}]],n=a("inbox",i);function c({title:t,description:r,action:s}){return e.jsxs("div",{className:"rounded-xl border border-dashed border-white/10 bg-slate-950/85 px-6 py-10 text-center shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",children:[e.jsx("div",{className:"mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-brand-300",children:e.jsx(n,{className:"h-5 w-5"})}),e.jsx("p",{className:"text-base font-semibold text-text-primary",children:t}),e.jsx("p",{className:"mt-2 app-muted-copy",children:r}),s?e.jsx("div",{className:"mt-4 flex justify-center",children:s}):null]})}function l({label:t,title:r,action:s}){return e.jsxs("div",{className:"mb-5 flex items-end justify-between gap-4",children:[e.jsxs("div",{children:[e.jsx("p",{className:"app-kicker",children:t}),e.jsx("h2",{className:"app-section-title",children:r})]}),s]})}export{c as E,l as S};

@@ -12,6 +12,11 @@ const taskFileSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    storagePath: {
+      type: String,
+      trim: true,
+      default: "",
+    },
     fileType: {
       type: String,
       required: true,

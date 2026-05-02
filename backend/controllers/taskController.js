@@ -308,7 +308,7 @@ const getTaskFiles = async (req, res) => {
 const createTaskFile = async (req, res) => {
   try {
     const userId = normalizeUserId(req.user?.id || req.user?._id);
-    const { fileName, fileUrl, fileType, fileSize } = req.body;
+    const { fileName, fileUrl, storagePath = "", fileType, fileSize } = req.body;
 
     if (!userId) {
       return res.status(401).json({ message: "Authenticated user is invalid" });
@@ -325,6 +325,7 @@ const createTaskFile = async (req, res) => {
     const taskFile = await TaskFile.create({
       fileName,
       fileUrl,
+      storagePath,
       fileType,
       fileSize,
       taskId: req.task._id,
@@ -337,6 +338,35 @@ const createTaskFile = async (req, res) => {
   } catch (error) {
     console.error("Task file create error:", error.message);
     return res.status(500).json({ message: "Unable to save task file" });
+  }
+};
+
+const deleteTaskFile = async (req, res) => {
+  try {
+    const { fileId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(fileId)) {
+      return res.status(400).json({ message: "Invalid file ID" });
+    }
+
+    const taskFile = await TaskFile.findOne({
+      _id: fileId,
+      taskId: req.task._id,
+    });
+
+    if (!taskFile) {
+      return res.status(404).json({ message: "Task file not found" });
+    }
+
+    await taskFile.deleteOne();
+
+    return res.status(200).json({
+      message: "Task file deleted successfully",
+      fileId,
+    });
+  } catch (error) {
+    console.error("Task file delete error:", error.message);
+    return res.status(500).json({ message: "Unable to delete task file" });
   }
 };
 
@@ -521,6 +551,7 @@ module.exports = {
   getTasks,
   getTaskFiles,
   createTaskFile,
+  deleteTaskFile,
   updateTask,
   deleteTask,
 };

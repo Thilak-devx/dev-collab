@@ -1,1 +1,0 @@
-import{j as e}from"./index-gtusgkgc.js";function n({label:s,title:i,action:t}){return e.jsxs("div",{className:"mb-5 flex items-end justify-between gap-4",children:[e.jsxs("div",{children:[e.jsx("p",{className:"app-kicker",children:s}),e.jsx("h2",{className:"app-section-title",children:i})]}),t]})}export{n as S};

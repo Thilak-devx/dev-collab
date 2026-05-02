@@ -1,8 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { CalendarDays, Download, Paperclip, Trash2, Upload, UserRound, X } from "lucide-react";
-import useToast from "../../hooks/useToast";
-import { createTaskFile, getTaskFiles } from "../../services/taskFileService";
 import {
+  CalendarDays,
+  Download,
+  ExternalLink,
+  Paperclip,
+  Trash2,
+  Upload,
+  UserRound,
+  X,
+} from "lucide-react";
+import useToast from "../../hooks/useToast";
+import {
+  createTaskFile,
+  deleteTaskFile as deleteTaskFileRecord,
+  getTaskFiles,
+} from "../../services/taskFileService";
+import {
+  deleteTaskFileFromSupabase,
   hasSupabaseStorageConfig,
   uploadTaskFileToSupabase,
 } from "../../services/supabaseStorage";
@@ -74,6 +88,7 @@ export default function TaskDetailsDrawer({
   const [files, setFiles] = useState([]);
   const [filesLoading, setFilesLoading] = useState(false);
   const [uploadingFiles, setUploadingFiles] = useState(false);
+  const [deletingFileId, setDeletingFileId] = useState("");
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -83,6 +98,7 @@ export default function TaskDetailsDrawer({
       setFiles([]);
       setFilesLoading(false);
       setUploadingFiles(false);
+      setDeletingFileId("");
       return;
     }
 
@@ -188,6 +204,32 @@ export default function TaskDetailsDrawer({
     }
   };
 
+  const handleDeleteTaskFile = async (file) => {
+    setDeletingFileId(file._id);
+
+    try {
+      if (hasSupabaseStorageConfig()) {
+        await deleteTaskFileFromSupabase(file);
+      }
+
+      await deleteTaskFileRecord(task._id, file._id);
+      setFiles((current) => current.filter((entry) => entry._id !== file._id));
+      showToast({
+        title: "File deleted",
+        description: `${file.fileName} was removed from ${task.title}.`,
+        type: "success",
+      });
+    } catch (error) {
+      showToast({
+        title: "Delete failed",
+        description: error.message || "Unable to delete file. Please try again.",
+        type: "error",
+      });
+    } finally {
+      setDeletingFileId("");
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-slate-950/55 backdrop-blur-sm">
       <button
@@ -228,9 +270,7 @@ export default function TaskDetailsDrawer({
             </span>
             <span className="inline-flex items-center gap-1.5 rounded-full border border-white/8 bg-white/[0.04] px-3 py-1 text-xs text-text-subtle">
               <CalendarDays className="h-3.5 w-3.5" />
-              {task.dueDate
-                ? new Date(task.dueDate).toLocaleDateString()
-                : "No due date"}
+              {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "No due date"}
             </span>
             <button
               className="inline-flex items-center gap-2 rounded-full border border-white/8 bg-white/[0.04] px-3 py-1 text-xs font-medium text-text-primary transition hover:bg-white/[0.08]"
@@ -245,10 +285,10 @@ export default function TaskDetailsDrawer({
 
           <input
             accept=".pdf,.docx,.txt,.png,.jpg,.jpeg,.webp"
-            ref={fileInputRef}
             className="hidden"
             multiple
             onChange={handleUploadFiles}
+            ref={fileInputRef}
             type="file"
           />
 
@@ -261,8 +301,8 @@ export default function TaskDetailsDrawer({
                     className="h-11 w-full rounded-xl border border-white/8 bg-white/[0.04] px-3.5 text-sm text-text-primary outline-none transition focus:border-brand-500/40"
                     name="title"
                     onChange={handleChange}
-                    value={values.title}
                     required
+                    value={values.title}
                   />
                 </label>
 
@@ -383,22 +423,19 @@ export default function TaskDetailsDrawer({
                   <p className="app-kicker">Assignment</p>
                   <div className="mt-3 space-y-3 text-sm text-text-muted">
                     <p>
-                      Owner:
-                      {" "}
+                      Owner:{" "}
                       <span className="font-medium text-text-primary">
                         {task.assignedTo?.name || "Unassigned"}
                       </span>
                     </p>
                     <p>
-                      Created by:
-                      {" "}
+                      Created by:{" "}
                       <span className="font-medium text-text-primary">
                         {task.createdBy?.name || "Unknown"}
                       </span>
                     </p>
                     <p>
-                      Due:
-                      {" "}
+                      Due:{" "}
                       <span className="font-medium text-text-primary">
                         {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "No due date"}
                       </span>
@@ -410,9 +447,7 @@ export default function TaskDetailsDrawer({
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="app-kicker">Attachments</p>
-                      <h3 className="mt-1 text-base font-semibold text-text-primary">
-                        Task files
-                      </h3>
+                      <h3 className="mt-1 text-base font-semibold text-text-primary">Task files</h3>
                     </div>
                     <button
                       className="app-action-button h-10 rounded-xl px-4 text-sm"
@@ -431,29 +466,63 @@ export default function TaskDetailsDrawer({
                     </div>
                   ) : files.length ? (
                     <div className="mt-4 space-y-3">
-                      {files.map((file) => (
-                        <a
-                          key={file._id}
-                          className="app-row-hover flex items-center justify-between gap-3 px-4 py-3"
-                          href={file.fileUrl}
-                          rel="noreferrer"
-                          target="_blank"
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-medium text-text-primary">
-                              {file.fileName}
-                            </p>
-                            <p className="mt-1 text-xs text-text-subtle">
-                              Uploaded by {file.uploadedBy?.name || "Workspace member"} on{" "}
-                              {new Date(file.createdAt).toLocaleDateString()}
-                              {file.fileSize ? ` • ${formatFileSize(file.fileSize)}` : ""}
-                            </p>
+                      {files.map((file) => {
+                        const isDeleting = deletingFileId === file._id;
+
+                        return (
+                          <div
+                            className="app-row-hover flex items-center justify-between gap-3 px-4 py-3"
+                            key={file._id}
+                          >
+                            <a
+                              className="min-w-0 flex-1"
+                              href={file.fileUrl}
+                              rel="noreferrer"
+                              target="_blank"
+                            >
+                              <p className="truncate text-sm font-medium text-text-primary">
+                                {file.fileName}
+                              </p>
+                              <p className="mt-1 text-xs text-text-subtle">
+                                Uploaded by {file.uploadedBy?.name || "Workspace member"} on{" "}
+                                {new Date(file.createdAt).toLocaleDateString()}
+                                {file.fileSize ? ` • ${formatFileSize(file.fileSize)}` : ""}
+                              </p>
+                            </a>
+
+                            <div className="flex items-center gap-2">
+                              <a
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/8 bg-white/[0.04] text-text-muted transition hover:bg-white/[0.08] hover:text-text-primary"
+                                href={file.fileUrl}
+                                rel="noreferrer"
+                                target="_blank"
+                                title="Open file"
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </a>
+                              <a
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/8 bg-white/[0.04] text-text-muted transition hover:bg-white/[0.08] hover:text-text-primary"
+                                download={file.fileName}
+                                href={file.fileUrl}
+                                rel="noreferrer"
+                                target="_blank"
+                                title="Download file"
+                              >
+                                <Download className="h-4 w-4" />
+                              </a>
+                              <button
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-red-400/20 bg-red-500/5 text-red-200 transition hover:bg-red-500/10 disabled:cursor-not-allowed disabled:opacity-60"
+                                disabled={isDeleting}
+                                onClick={() => handleDeleteTaskFile(file)}
+                                title="Delete file"
+                                type="button"
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
                           </div>
-                          <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-white/8 bg-white/[0.04] text-text-muted transition hover:bg-white/[0.08] hover:text-text-primary">
-                            <Download className="h-4 w-4" />
-                          </span>
-                        </a>
-                      ))}
+                        );
+                      })}
                     </div>
                   ) : (
                     <div className="mt-4 rounded-xl border border-dashed border-white/10 bg-slate-950/35 px-4 py-8 text-center">
