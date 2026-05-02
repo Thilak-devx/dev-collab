@@ -20,6 +20,11 @@ export const createProjectChannel = async (projectId, values) => {
   return data;
 };
 
+export const deleteProjectChannel = async (projectId, channelId) => {
+  const { data } = await api.delete(`/projects/${projectId}/channels/${channelId}`);
+  return data;
+};
+
 export const createMessage = async (values) => {
   const { data } = await api.post("/messages", values);
   return data;

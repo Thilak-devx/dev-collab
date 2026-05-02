@@ -11,6 +11,7 @@ const {
 const {
   listProjectChannels,
   createProjectChannel,
+  deleteProjectChannel,
   getChannelMessages,
   createChannelMessage,
 } = require("../controllers/messageController");
@@ -46,6 +47,7 @@ router.post("/:id/tasks", validateWithZod({ params: resourceIdParamsSchema, body
 router.get("/:id/tasks", validateWithZod({ params: resourceIdParamsSchema }), loadProject, requireProjectMember, getProjectTasks);
 router.get("/:id/channels", validateWithZod({ params: resourceIdParamsSchema }), loadProject, requireProjectMember, listProjectChannels);
 router.post("/:id/channels", validateWithZod({ params: resourceIdParamsSchema, body: channelCreateSchema }), loadProject, requireProjectMember, createProjectChannel);
+router.delete("/:id/channels/:channelId", validateWithZod({ params: resourceIdParamsSchema.extend({ channelId: resourceIdParamsSchema.shape.id }) }), loadProject, requireProjectMember, deleteProjectChannel);
 router.get("/:id/channels/:channelId/messages", validateWithZod({ params: resourceIdParamsSchema.extend({ channelId: resourceIdParamsSchema.shape.id }), query: channelMessagesQuerySchema }), loadProject, requireProjectMember, getChannelMessages);
 router.post("/:id/channels/:channelId/messages", validateWithZod({ params: resourceIdParamsSchema.extend({ channelId: resourceIdParamsSchema.shape.id }), body: messageCreateSchema }), loadProject, requireProjectMember, createChannelMessage);
 router.delete("/:id", validateWithZod({ params: resourceIdParamsSchema }), loadProject, requireProjectManager, deleteProject);

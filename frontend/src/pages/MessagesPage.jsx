@@ -21,6 +21,7 @@ import useWorkspace from "../hooks/useWorkspace";
 import {
   createMessage,
   createProjectChannel,
+  deleteProjectChannel,
   getChannelMessages,
   getProjectChannels,
 } from "../services/messageService";
@@ -95,6 +96,7 @@ export default function MessagesPage() {
   const [showCreateChannelModal, setShowCreateChannelModal] = useState(false);
   const [createChannelLoading, setCreateChannelLoading] = useState(false);
   const [createChannelError, setCreateChannelError] = useState("");
+  const [channelActionLoadingId, setChannelActionLoadingId] = useState("");
   const [unreadByChannel, setUnreadByChannel] = useState({});
   const messageListRef = useRef(null);
   const bottomRef = useRef(null);
@@ -165,6 +167,14 @@ export default function MessagesPage() {
 
     loadChannels();
   }, [conversationId, location.state?.conversationId, selectedProjectId]);
+
+  useEffect(() => {
+    if (selectedChannelId || !channels.length) {
+      return;
+    }
+
+    setSelectedChannelId(channels[0]._id);
+  }, [channels, selectedChannelId]);
 
   useEffect(() => {
     const loadMessages = async () => {
@@ -249,26 +259,57 @@ export default function MessagesPage() {
     };
 
     const handleReceiveMessage = (payload) => {
-      const incomingChannelId = payload?.message?.channelId?._id
-        || payload?.message?.channelId?.id
-        || payload?.message?.channelId
+      const incomingMessage = payload?.message || payload;
+      const incomingChannelId = incomingMessage?.channelId?._id
+        || incomingMessage?.channelId?.id
+        || incomingMessage?.channelId
         || payload?.channel?._id;
 
-      if (incomingChannelId !== selectedChannelId) {
+      if (!incomingChannelId) {
         return;
       }
 
-      setMessages((prev) => mergeMessage(prev, payload.message));
+      if (incomingChannelId !== selectedChannelId) {
+        setUnreadByChannel((current) => ({
+          ...current,
+          [incomingChannelId]: (current[incomingChannelId] || 0) + 1,
+        }));
+        return;
+      }
+
+      setMessages((prev) => mergeMessage(prev, incomingMessage));
+    };
+
+    const handleChannelDeleted = (payload) => {
+      const removedChannelId = payload?.channelId;
+
+      if (!removedChannelId) {
+        return;
+      }
+
+      setChannels((current) => current.filter((channel) => channel._id !== removedChannelId));
+      setUnreadByChannel((current) => {
+        const nextState = { ...current };
+        delete nextState[removedChannelId];
+        return nextState;
+      });
+
+      if (selectedChannelId === removedChannelId) {
+        setSelectedChannelId("");
+        setMessages([]);
+      }
     };
 
     socket.on("channelCreated", handleChannelCreated);
     socket.on("messageCreated", handleMessageCreated);
     socket.on("receive_message", handleReceiveMessage);
+    socket.on("channelDeleted", handleChannelDeleted);
 
     return () => {
       socket.off("channelCreated", handleChannelCreated);
       socket.off("messageCreated", handleMessageCreated);
       socket.off("receive_message", handleReceiveMessage);
+      socket.off("channelDeleted", handleChannelDeleted);
     };
   }, [selectedChannelId, selectedProjectId, showToast, token, user?.id]);
 
@@ -320,6 +361,54 @@ export default function MessagesPage() {
       });
     } finally {
       setCreateChannelLoading(false);
+    }
+  };
+
+  const handleDeleteChannel = async (channel) => {
+    if (!selectedProjectId || !channel?._id) {
+      return;
+    }
+
+    if (channel.isDefault) {
+      showToast({
+        title: "Channel cannot be deleted",
+        description: "The default channel must stay available for the project.",
+        type: "error",
+      });
+      return;
+    }
+
+    setChannelActionLoadingId(channel._id);
+
+    try {
+      await deleteProjectChannel(selectedProjectId, channel._id);
+
+      const remainingChannels = channels.filter((entry) => entry._id !== channel._id);
+      setChannels(remainingChannels);
+      setUnreadByChannel((current) => {
+        const nextState = { ...current };
+        delete nextState[channel._id];
+        return nextState;
+      });
+
+      if (selectedChannelId === channel._id) {
+        setSelectedChannelId(remainingChannels[0]?._id || "");
+        setMessages([]);
+      }
+
+      showToast({
+        title: "Channel deleted",
+        description: `#${channel.slug} has been removed.`,
+        type: "success",
+      });
+    } catch (err) {
+      showToast({
+        title: "Unable to delete channel",
+        description: err.response?.data?.message || "Unable to delete channel",
+        type: "error",
+      });
+    } finally {
+      setChannelActionLoadingId("");
     }
   };
 
@@ -430,26 +519,43 @@ export default function MessagesPage() {
                 <SkeletonList rows={3} />
               ) : channels.length ? (
                 channels.map((channel) => (
-                  <button
+                  <div
                     key={channel._id}
-                    className={`flex w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-left transition ${
+                    className={`flex items-center gap-2 rounded-xl border px-2 py-2 transition ${
                       selectedChannelId === channel._id
-                        ? "border-sky-400/20 bg-sky-400/10 text-text-primary"
-                        : "border-white/8 bg-slate-950/60 text-text-muted hover:bg-white/[0.05] hover:text-text-primary"
+                        ? "border-sky-400/20 bg-sky-400/10"
+                        : "border-white/8 bg-slate-950/60 hover:bg-white/[0.05]"
                     }`}
-                    onClick={() => setSelectedChannelId(channel._id)}
-                    type="button"
                   >
-                    <span className="inline-flex items-center gap-2">
-                      <Hash className="h-4 w-4" />
-                      <span className="text-sm font-medium">{channel.slug}</span>
-                    </span>
-                    {unreadByChannel[channel._id] ? (
-                      <span className="rounded-full bg-brand-500/20 px-2 py-0.5 text-[11px] font-semibold text-brand-200">
-                        {unreadByChannel[channel._id]}
+                    <button
+                      className="flex min-w-0 flex-1 items-center justify-between gap-3 px-2 py-1 text-left text-text-muted transition hover:text-text-primary"
+                      onClick={() => setSelectedChannelId(channel._id)}
+                      type="button"
+                    >
+                      <span className="inline-flex min-w-0 items-center gap-2">
+                        <Hash className="h-4 w-4 shrink-0" />
+                        <span className="truncate text-sm font-medium">{channel.slug}</span>
                       </span>
+                      {unreadByChannel[channel._id] ? (
+                        <span className="rounded-full bg-brand-500/20 px-2 py-0.5 text-[11px] font-semibold text-brand-200">
+                          {unreadByChannel[channel._id]}
+                        </span>
+                      ) : null}
+                    </button>
+
+                    {!channel.isDefault ? (
+                      <button
+                        aria-label={`Delete ${channel.slug} channel`}
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/8 bg-white/[0.04] text-text-subtle transition hover:border-red-400/20 hover:bg-red-500/10 hover:text-red-200 disabled:cursor-not-allowed disabled:opacity-50"
+                        disabled={channelActionLoadingId === channel._id}
+                        onClick={() => handleDeleteChannel(channel)}
+                        title="Delete channel"
+                        type="button"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
                     ) : null}
-                  </button>
+                  </div>
                 ))
               ) : (
                 <EmptyState
@@ -559,7 +665,7 @@ export default function MessagesPage() {
                               </button>
                             </div>
                             <p className="pr-16 whitespace-pre-wrap text-sm leading-7 text-slate-200">
-                              {message.body}
+                              {message.body || message.content}
                             </p>
                           </div>
                         </div>

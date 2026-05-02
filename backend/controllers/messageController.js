@@ -158,6 +158,50 @@ const createProjectChannel = async (req, res) => {
   }
 };
 
+const deleteProjectChannel = async (req, res) => {
+  try {
+    const { channelId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(channelId)) {
+      return res.status(400).json({ message: "Invalid channel ID" });
+    }
+
+    const channel = await ProjectChannel.findOne({
+      _id: channelId,
+      projectId: req.project._id,
+    });
+
+    if (!channel) {
+      return res.status(404).json({ message: "Channel not found" });
+    }
+
+    if (channel.isDefault) {
+      return res.status(400).json({ message: "The default channel cannot be deleted" });
+    }
+
+    await Message.deleteMany({
+      projectId: req.project._id,
+      channelId: channel._id,
+    });
+
+    await channel.deleteOne();
+
+    emitProjectEvent(req.project._id.toString(), "channelDeleted", {
+      channelId: channel._id.toString(),
+      project: serializeProjectSummary(req.project),
+      actor: serializeUserSummary(req.user),
+    });
+
+    return res.status(200).json({
+      message: "Channel deleted successfully",
+      channelId: channel._id.toString(),
+    });
+  } catch (error) {
+    console.error("Channel delete error:", error.message);
+    return res.status(500).json({ message: "Unable to delete channel" });
+  }
+};
+
 const getChannelMessages = async (req, res) => {
   try {
     const limit = Math.min(Number(req.query.limit) || 100, 200);
@@ -347,6 +391,7 @@ module.exports = {
   listProjectChannels,
   createChannel: createProjectChannel,
   createProjectChannel,
+  deleteProjectChannel,
   createMessage,
   getProjectMessages,
   getMessagesByChannel,

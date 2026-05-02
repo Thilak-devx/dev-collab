@@ -1,4 +1,4 @@
-import{c as n,p as s}from"./index-B-xRtelb.js";/**
+import{c as n,p as t}from"./index-DLLEFFPM.js";/**
  * @license lucide-react v0.511.0 - ISC
  *
  * This source code is licensed under the ISC license.
@@ -13,4 +13,4 @@ import{c as n,p as s}from"./index-B-xRtelb.js";/**
  *
  * This source code is licensed under the ISC license.
  * See the LICENSE file in the root directory of this source tree.
- */const i=[["path",{d:"M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z",key:"117uat"}],["path",{d:"M6 12h16",key:"s4cdu5"}]],y=n("send-horizontal",i),h=async a=>{const{data:e}=await s.get(`/messages/project/${a}`);return e},g=async a=>{const{data:e}=await s.get(`/projects/${a}/channels`);return e},k=async(a,e)=>{const t={name:e.name,projectId:a},{data:c}=await s.post(`/projects/${a}/channels`,t);return c},u=async a=>{const{data:e}=await s.post("/messages",a);return e},m=async(a,e,t={})=>{const{data:c}=await s.get(`/messages/${e}`,{params:t});return c};export{d as E,p as P,y as S,m as a,u as b,k as c,h as d,g};
+ */const l=[["path",{d:"M3.714 3.048a.498.498 0 0 0-.683.627l2.843 7.627a2 2 0 0 1 0 1.396l-2.842 7.627a.498.498 0 0 0 .682.627l18-8.5a.5.5 0 0 0 0-.904z",key:"117uat"}],["path",{d:"M6 12h16",key:"s4cdu5"}]],y=n("send-horizontal",l),h=async a=>{const{data:e}=await t.get(`/messages/project/${a}`);return e},g=async a=>{const{data:e}=await t.get(`/projects/${a}/channels`);return e},u=async(a,e)=>{const s={name:e.name,projectId:a},{data:c}=await t.post(`/projects/${a}/channels`,s);return c},j=async(a,e)=>{const{data:s}=await t.delete(`/projects/${a}/channels/${e}`);return s},k=async a=>{const{data:e}=await t.post("/messages",a);return e},m=async(a,e,s={})=>{const{data:c}=await t.get(`/messages/${e}`,{params:s});return c};export{d as E,p as P,y as S,m as a,k as b,u as c,j as d,h as e,g};
