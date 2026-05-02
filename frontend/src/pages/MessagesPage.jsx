@@ -428,6 +428,8 @@ export default function MessagesPage() {
       };
 
       const savedMessage = await createMessage(message);
+      setMessages((current) => mergeMessage(current, savedMessage));
+      setUnreadByChannel((current) => ({ ...current, [selectedChannel._id]: 0 }));
       const activeSocket = connectSocket();
       activeSocket.emit("send_message", savedMessage);
       setDraft("");
