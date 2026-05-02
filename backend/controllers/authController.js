@@ -21,7 +21,7 @@ const {
   setRefreshTokenCookie,
 } = require("../utils/tokenUtils");
 
-const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCK_TIME_MS = 15 * 60 * 1000;
 
@@ -101,6 +101,25 @@ const buildAuthPayload = async (res, user) => {
     user: serializeUser(user),
   };
 };
+
+async function verifyGoogleToken(idToken) {
+  if (!idToken) {
+    throw new Error("No token provided");
+  }
+
+  const ticket = await client.verifyIdToken({
+    idToken: idToken,
+    audience: process.env.GOOGLE_CLIENT_ID,
+  });
+
+  const payload = ticket.getPayload();
+
+  if (!payload) {
+    throw new Error("Invalid payload");
+  }
+
+  return payload;
+}
 
 const registerUser = async (req, res) => {
   try {
@@ -182,25 +201,16 @@ const googleAuth = async (req, res) => {
       return res.status(500).json({ message: "Google OAuth is not configured" });
     }
 
-    if (!token) {
-      return res.status(400).json({ message: "No token provided" });
-    }
-
-    console.log("Incoming token:", req.body.token?.slice(0, 30));
+    console.log("Token length:", token?.length);
     console.log("CLIENT_ID:", process.env.GOOGLE_CLIENT_ID);
-    const ticket = await googleClient.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
-
-    const payload = ticket.getPayload();
+    const payload = await verifyGoogleToken(token);
 
     if (!payload || !payload.email || !payload.sub) {
       return res.status(401).json({ message: "Invalid Google token" });
     }
 
-    const { email, name } = payload;
-    console.log("Verified user:", email);
+    const { email, name, picture } = payload;
+    console.log("Google user verified:", email);
 
     const normalizedEmail = email.toLowerCase();
     let user = await User.findOne({
@@ -230,7 +240,7 @@ const googleAuth = async (req, res) => {
     const failureReason = error?.message || "Unknown Google auth error";
     logSecurityEvent("GOOGLE_AUTH_FAILURE", `Google auth failed from ${req.ip}: ${failureReason}`);
     console.error("Google verify error:", error.message);
-    return res.status(401).json({ message: "Invalid Google token" });
+    return res.status(401).json({ message: "Invalid Google token", error: error.message });
   }
 };
 
