@@ -216,7 +216,7 @@ export default function LoginPage() {
                   theme={compactGoogleButton ? "filled_black" : "outline"}
                   size="large"
                   shape="pill"
-                  width={googleButtonWidth}
+                  width={compactGoogleButton ? 320 : googleButtonWidth}
                 />
               </div>
             </div>

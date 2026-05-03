@@ -444,11 +444,11 @@ select {
   }
 
   .google-login-shell {
-    @apply w-full;
+    @apply flex w-full justify-center;
   }
 
   .google-login-shell-mobile {
-    @apply rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3;
+    @apply rounded-2xl border border-white/10 bg-white/[0.03] px-3 py-2;
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.04),
       0 12px 28px rgba(2, 6, 23, 0.18);
@@ -456,8 +456,12 @@ select {
 
   .google-login-shell > div,
   .google-login-shell iframe {
-    width: 100% !important;
     max-width: 100% !important;
+  }
+
+  .google-login-shell-mobile > div,
+  .google-login-shell-mobile iframe {
+    width: auto !important;
   }
 
   .google-login-shell iframe {
