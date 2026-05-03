@@ -178,14 +178,15 @@ export default function LoginPage() {
             </div>
 
             <div className={`transition duration-200 ${googleLoading ? "opacity-70" : ""}`}>
-              <div className="google-login-shell overflow-hidden rounded-xl border border-white/10 bg-white shadow-[0_10px_30px_rgba(2,6,23,0.2)] transition duration-200 hover:border-white/20 hover:shadow-[0_14px_36px_rgba(59,130,246,0.14)]">
+              <div className="google-login-shell rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm">
                 <GoogleLogin
                   onSuccess={handleGoogleSuccess}
                   onError={handleGoogleError}
                   text={compactGoogleButton ? "continue_with" : "signin_with"}
-                  theme="outline"
+                  theme={compactGoogleButton ? "filled_black" : "outline"}
                   size={compactGoogleButton ? "medium" : "large"}
                   shape={compactGoogleButton ? "rectangular" : "pill"}
+                  width={compactGoogleButton ? 260 : 360}
                 />
               </div>
             </div>
