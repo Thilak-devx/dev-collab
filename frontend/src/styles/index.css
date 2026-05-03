@@ -444,11 +444,12 @@ select {
   }
 
   .google-login-shell {
-    @apply flex min-h-[56px] items-center justify-center;
+    @apply w-full;
   }
 
   .google-login-shell > div,
   .google-login-shell iframe {
+    width: 100% !important;
     max-width: 100% !important;
   }
 

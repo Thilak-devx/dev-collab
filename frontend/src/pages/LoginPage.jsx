@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { ArrowRight, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
@@ -13,6 +13,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [compactGoogleButton, setCompactGoogleButton] = useState(false);
+  const [googleButtonWidth, setGoogleButtonWidth] = useState(320);
+  const googleButtonShellRef = useRef(null);
   const redirectPath = useMemo(() => {
     const query = new URLSearchParams(location.search);
     return query.get("redirect") || "/dashboard";
@@ -27,6 +29,31 @@ export default function LoginPage() {
     window.addEventListener("resize", syncGoogleButtonLayout);
 
     return () => window.removeEventListener("resize", syncGoogleButtonLayout);
+  }, []);
+
+  useEffect(() => {
+    const shell = googleButtonShellRef.current;
+
+    if (!shell) {
+      return undefined;
+    }
+
+    const syncButtonWidth = () => {
+      const nextWidth = Math.max(Math.floor(shell.getBoundingClientRect().width), 220);
+      setGoogleButtonWidth(nextWidth);
+    };
+
+    syncButtonWidth();
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", syncButtonWidth);
+      return () => window.removeEventListener("resize", syncButtonWidth);
+    }
+
+    const observer = new ResizeObserver(syncButtonWidth);
+    observer.observe(shell);
+
+    return () => observer.disconnect();
   }, []);
 
   const getRequestErrorMessage = (requestError, fallbackMessage) => {
@@ -178,15 +205,18 @@ export default function LoginPage() {
             </div>
 
             <div className={`transition duration-200 ${googleLoading ? "opacity-70" : ""}`}>
-              <div className="google-login-shell rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] backdrop-blur-sm">
+              <div
+                ref={googleButtonShellRef}
+                className="google-login-shell"
+              >
                 <GoogleLogin
                   onSuccess={handleGoogleSuccess}
                   onError={handleGoogleError}
                   text={compactGoogleButton ? "continue_with" : "signin_with"}
-                  theme={compactGoogleButton ? "filled_black" : "outline"}
-                  size={compactGoogleButton ? "medium" : "large"}
-                  shape={compactGoogleButton ? "rectangular" : "pill"}
-                  width={compactGoogleButton ? 260 : 360}
+                  theme="outline"
+                  size="large"
+                  shape="pill"
+                  width={googleButtonWidth}
                 />
               </div>
             </div>
