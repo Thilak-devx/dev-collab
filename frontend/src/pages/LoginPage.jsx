@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { GoogleLogin } from "@react-oauth/google";
 import { ArrowRight, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
@@ -12,10 +12,22 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
+  const [compactGoogleButton, setCompactGoogleButton] = useState(false);
   const redirectPath = useMemo(() => {
     const query = new URLSearchParams(location.search);
     return query.get("redirect") || "/dashboard";
   }, [location.search]);
+
+  useEffect(() => {
+    const syncGoogleButtonLayout = () => {
+      setCompactGoogleButton(window.innerWidth < 480);
+    };
+
+    syncGoogleButtonLayout();
+    window.addEventListener("resize", syncGoogleButtonLayout);
+
+    return () => window.removeEventListener("resize", syncGoogleButtonLayout);
+  }, []);
 
   const getRequestErrorMessage = (requestError, fallbackMessage) => {
     if (requestError.response?.data?.message) {
@@ -166,15 +178,14 @@ export default function LoginPage() {
             </div>
 
             <div className={`transition duration-200 ${googleLoading ? "opacity-70" : ""}`}>
-              <div className="overflow-hidden rounded-xl border border-white/10 bg-white shadow-[0_10px_30px_rgba(2,6,23,0.2)] transition duration-200 hover:border-white/20 hover:shadow-[0_14px_36px_rgba(59,130,246,0.14)]">
+              <div className="google-login-shell overflow-hidden rounded-xl border border-white/10 bg-white shadow-[0_10px_30px_rgba(2,6,23,0.2)] transition duration-200 hover:border-white/20 hover:shadow-[0_14px_36px_rgba(59,130,246,0.14)]">
                 <GoogleLogin
                   onSuccess={handleGoogleSuccess}
                   onError={handleGoogleError}
-                  text="signin_with"
+                  text={compactGoogleButton ? "continue_with" : "signin_with"}
                   theme="outline"
-                  size="large"
-                  shape="pill"
-                  width="100%"
+                  size={compactGoogleButton ? "medium" : "large"}
+                  shape={compactGoogleButton ? "rectangular" : "pill"}
                 />
               </div>
             </div>
