@@ -207,13 +207,13 @@ export default function LoginPage() {
             <div className={`transition duration-200 ${googleLoading ? "opacity-70" : ""}`}>
               <div
                 ref={googleButtonShellRef}
-                className="google-login-shell"
+                className={`google-login-shell ${compactGoogleButton ? "google-login-shell-mobile" : ""}`}
               >
                 <GoogleLogin
                   onSuccess={handleGoogleSuccess}
                   onError={handleGoogleError}
                   text={compactGoogleButton ? "continue_with" : "signin_with"}
-                  theme="outline"
+                  theme={compactGoogleButton ? "filled_black" : "outline"}
                   size="large"
                   shape="pill"
                   width={googleButtonWidth}
