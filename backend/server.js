@@ -2,6 +2,7 @@ const cookieParser = require("cookie-parser");
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+dotenv.config();
 const helmet = require("helmet");
 const http = require("http");
 const connectDB = require("./config/db");
@@ -16,7 +17,7 @@ const { notFound, errorHandler } = require("./middleware/errorMiddleware");
 const { apiLimiter } = require("./middleware/rateLimiter");
 const { sanitizeRequest } = require("./middleware/sanitizeMiddleware");
 const { createSocketServer } = require("./socket/socketServer");
-const { parseAllowedOrigins } = require("./config/env");
+const { parseAllowedOrigins, validateServerEnv } = require("./config/env");
 
 let compression = (_req, _res, next) => next();
 
@@ -28,7 +29,7 @@ try {
   }
 }
 
-dotenv.config();
+validateServerEnv();
 const app = express();
 const allowedOrigins = parseAllowedOrigins();
 

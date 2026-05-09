@@ -21,9 +21,10 @@ const {
   setRefreshTokenCookie,
 } = require("../utils/tokenUtils");
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCK_TIME_MS = 15 * 60 * 1000;
+
+const getGoogleClient = () => new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const normalizeUserId = (value) => {
   if (!value) {
@@ -107,7 +108,7 @@ async function verifyGoogleToken(idToken) {
     throw new Error("No token provided");
   }
 
-  const ticket = await client.verifyIdToken({
+  const ticket = await getGoogleClient().verifyIdToken({
     idToken: idToken,
     audience: process.env.GOOGLE_CLIENT_ID,
   });

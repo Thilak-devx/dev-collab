@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { publicEnv } from "../config/publicEnv";
 
 let supabaseClient = null;
 const maxTaskFileSize = 5 * 1024 * 1024;
@@ -12,8 +13,8 @@ const allowedTaskFileTypes = new Set([
 ]);
 
 const getSupabaseCredentials = () => ({
-  url: import.meta.env.VITE_SUPABASE_URL,
-  anonKey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+  url: publicEnv.supabaseUrl,
+  anonKey: publicEnv.supabaseAnonKey,
 });
 
 export const hasSupabaseStorageConfig = () => {

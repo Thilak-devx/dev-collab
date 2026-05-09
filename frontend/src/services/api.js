@@ -1,13 +1,11 @@
 import axios from "axios";
-
-const defaultApiUrl =
-  typeof window !== "undefined" ? `${window.location.origin}/api` : "/api";
+import { publicEnv } from "../config/publicEnv";
 
 const normalizeApiBaseUrl = (value) => {
   const rawValue = typeof value === "string" ? value.trim() : "";
 
   if (!rawValue) {
-    return defaultApiUrl;
+    return publicEnv.apiUrl;
   }
 
   if (/\/api\/?$/i.test(rawValue)) {
@@ -17,7 +15,7 @@ const normalizeApiBaseUrl = (value) => {
   return `${rawValue.replace(/\/+$/, "")}/api`;
 };
 
-export const API_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_URL);
+export const API_URL = normalizeApiBaseUrl(publicEnv.apiUrl);
 
 const api = axios.create({
   baseURL: API_URL,

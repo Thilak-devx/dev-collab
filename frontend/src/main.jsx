@@ -11,11 +11,12 @@ import { AuthProvider } from "./context/AuthContext";
 import { ToastProvider } from "./context/ToastContext";
 import { WorkspaceProvider } from "./context/WorkspaceContext";
 import ToastViewport from "./components/ui/ToastViewport";
+import { publicEnv } from "./config/publicEnv";
 import "./styles/index.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID || ""}>
+    <GoogleOAuthProvider clientId={publicEnv.googleClientId}>
       <BrowserRouter>
         <ToastProvider>
           <AuthProvider>

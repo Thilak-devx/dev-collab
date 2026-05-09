@@ -1,1 +1,48 @@
 node_modules/
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.development
+.env.test
+*.env
+*.env.local
+*.env.production
+*.env.development
+*.env.test
+!.env.example
+!*.env.example
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Logs and temp runtime output
+*.log
+*.out
+*.err
+tmp/
+temp/
+
+# Dependency stores / caches
+.pnpm-store/
+.npm/
+.yarn/
+
+# IDE / OS files
+.DS_Store
+Thumbs.db
+
+# Deployment / platform artifacts
+.vercel/
+.render/
+
+# Service credentials / keys
+*.pem
+*.key
+*.p12
+*.pfx
+service-account*.json
+firebase-service-account*.json
